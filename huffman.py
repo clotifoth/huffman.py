@@ -13,7 +13,7 @@ import struct
 def main(argv):
 	inputpath = ''
 	outputpath = ''
-	verbose = 0;
+
 	if(len(argv) < 1):
 		exit(2)
 	try:
@@ -34,9 +34,8 @@ def main(argv):
 		outputpath == '' or
 		not (os.path.isfile(inputpath))): exit(2)
 
-	ifile = open(inputpath, "r")
-	ofile = open(outputpath, "w")
 
+	ifile = open(inputpath, "r")
 	freqtable = []
 
 	for i in range(256): 
@@ -49,6 +48,7 @@ def main(argv):
 		index = ord(iter[0])
 		freqtable[index] = freqtable[index] + 1;
 
+	ifile.close()
 	freqtuples = []
 
 	for i in range(256):
@@ -58,18 +58,37 @@ def main(argv):
 
 	dirtytree = (buildTree(freqtuples))
 
-	print(str(dirtytree))
-
 	tree = tuplesToBST(dirtytree)
-
-	print(str(tree))
 
 	codes = dict()
 
 	assignCodes(tree, codes)
 
-	print(codes)
+	buf = ''
+	ofile = open(outputpath, "wb")	
+	ifile = open(inputpath, "r")
 
+	while(1):
+		iter = ifile.read(1)
+		if(not iter):
+			while(len(buf) < 8):
+				buf = buf + "0"
+			
+		buf = buf + (encode(iter, codes))
+
+		if(len(buf) >= 8):
+			data = bytes([int(buf[:8], 2)]) # problem here? 8?
+			ofile.write(data)
+			buf = buf[8:]
+		
+
+		if(not iter):
+			break
+
+	tfile = open(outputpath+(".tree"), "w")
+	tfile.write(str(freqtuples))
+	print("^ Encoded string v Encoded, then decoded")
+	print(decode(encode("Hello, world!", codes), tree))
 
 
 def buildTree(tuples):
@@ -92,6 +111,24 @@ def assignCodes (node, codes, pat=''):
 	else: 
 		assignCodes(node[0], codes, pat + "0")    # Branch point. Do the left branch
 		assignCodes(node[1], codes, pat + "1")    # then do the right branch.
+
+def encode (s, codes) :
+    output = ""
+    for ch in s : 
+    	output += codes[ord(ch)]
+    	print((ord(ch)))
+    return output
+
+def decode (s, tree) :
+    output = ""
+    p = tree
+    for bit in s :
+        if bit == '0' : p = p[0]     # Head up the left branch
+        else          : p = p[1]     # or up the right branch
+        if type(p) == type(int(0)) :
+            output += chr(p)              # found a character. Add to output
+            p = tree                 # and restart for next character
+    return output
 
 def exit(status):
 	print('usage: huffman.py -i <inputpath> -o <outputpath>')
