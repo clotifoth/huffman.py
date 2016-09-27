@@ -9,6 +9,7 @@ import os, os.path
 import sys
 import getopt
 import struct
+import numpy  # Only used to format output as proof of concept
 
 def main(argv):
 	inputpath = ''
@@ -54,41 +55,39 @@ def main(argv):
 	for i in range(256):
 		freqtuples.append([freqtable[i],i])	
 
-	freqtuples.sort(key=lambda x: x[1])
+	freqtuples.sort(key=lambda x: x[1]) 	# Sort by frequency
+	dirtytree = (buildTree(freqtuples)) 	# Take frequency table and build tree from it
+	tree = tuplesToBST(dirtytree)			# Turn tree into BST
 
-	dirtytree = (buildTree(freqtuples))
+	codes = dict() 							# Finally, the code table we will use to decode
+	assignCodes(tree, codes)				# Use the finished tree to assign the shortest
+											# codes to the most common bytes.
 
-	tree = tuplesToBST(dirtytree)
+	print("Byte conversion table complete. Printing below:")
 
-	codes = dict()
+	numpy.set_printoptions(formatter={'int':lambda x:hex(int(x))})
+	for key, value in codes.items() :
+		print ("0x" + format(key, "02X"), value)
 
-	assignCodes(tree, codes)
-
-	buf = ''
-	ofile = open(outputpath, "wb")	
+	ofile = open(outputpath, "w")	
 	ifile = open(inputpath, "r")
 
-	while(1):
+	while(1): # Write binary as a string to the output file for proof of concept
 		iter = ifile.read(1)
 		if(not iter):
-			while(len(buf) < 8):
-				buf = buf + "0"
-			
-		buf = buf + (encode(iter, codes))
-
-		if(len(buf) >= 8):
-			data = bytes([int(buf[:8], 2)]) # problem here? 8?
-			ofile.write(data)
-			buf = buf[8:]
-		
-
-		if(not iter):
 			break
+		ofile.write(encode(iter, codes))
+		ofile.write(" ") #delimiter
 
-	tfile = open(outputpath+(".tree"), "w")
-	tfile.write(str(freqtuples))
-	print("^ Encoded string v Encoded, then decoded")
-	print(decode(encode("Hello, world!", codes), tree))
+	print("File written to " + outputpath)
+	print("Decoding file from " + outputpath + " to console.\n")
+	ofile.close()
+
+	# @todo replace with a solution that considers individual tokens instead
+	ofile = open(outputpath, "r")
+	input = ofile.read().split(" ")
+	for s in input:
+		sys.stdout.write(decode(s, tree)) # To avoid new print newlines
 
 
 def buildTree(tuples):
@@ -116,7 +115,6 @@ def encode (s, codes) :
     output = ""
     for ch in s : 
     	output += codes[ord(ch)]
-    	print((ord(ch)))
     return output
 
 def decode (s, tree) :
