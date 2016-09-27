@@ -90,6 +90,33 @@ def main(argv):
 		sys.stdout.write(decode(s, tree)) # To avoid new print newlines
 
 
+
+	''' This code is part of my unfinished real (not string) file I/O
+	buf = ''
+	ofile = open(outputpath, "wb")	
+	ifile = open(inputpath, "r")
+
+	while(1):
+		iter = ifile.read(1)
+		if(not iter): # Pack last byte to align cleanly
+			while(len(buf) < 8):
+				buf = buf + "0"
+			
+		buf = buf + (encode(iter, codes))
+
+		if(len(buf) >= 8):
+			data = bytes([int(buf[:8], 2)]) # problem here? 8?
+			ofile.write(data)
+			buf = buf[8:]
+		
+
+		if(not iter):
+			break
+
+	tfile = open(outputpath+(".tree"), "w")
+	tfile.write(str(tree))
+	'''
+
 def buildTree(tuples):
 	while len(tuples) > 1 :
 		leastTwo = tuple(tuples[0:2])                  # get the 2 to combine
