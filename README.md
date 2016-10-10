@@ -11,4 +11,8 @@ To run huffman.py, two flags are required.
 - `-o [path]` specifies the output file.
 
 # Contact
-If there is an issue with the program, please file a GitHub issue.  Otherwise, feel free to shoot me an [email](clotifoth@gmail.com).
+If there is an issue with the program, please file a GitHub issue.  Otherwise, feel free to shoot me an [email](mailto:clotifoth@gmail.com).
+
+----
+
+If you like this project, consider visiting my personal website at http://clotifoth.github.io/ to see what else I've been up to.
